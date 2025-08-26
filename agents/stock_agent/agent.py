@@ -1,6 +1,6 @@
 import os
 
-from google.adk import Agent
+from google.adk.agents import LlmAgent
 from google.adk.tools import FunctionTool
 
 from .tools import get_stock_price
@@ -16,11 +16,25 @@ opik.configure(
 opik_tracer = OpikTracer()
 
 # agent constructor
-stock_agent = Agent(
+stock_agent = LlmAgent(
     name="stock_agent",
     model="gemini-2.5-pro",
     description=("An agent that provides stock market information"),
-    instructions="You are a helpful financial assistant that provides stock market information. When asked about stock prices, use the get_stock_price tool to retrieve current information. Explain the data in a clear, concise manner",
+    instruction="""You are a helpful financial assistant that provides stock market information. 
+
+When asked about stock prices:
+1. Use the get_stock_price tool to retrieve current information
+2. Always display the results in a clear, readable format
+3. Include all important details: company name, current price, daily high/low, and currency
+4. Format the response in a user-friendly way
+
+Example response format:
+**[Company Name] ([TICKER])**
+- Current Price: $[price] [currency]
+- Daily High: $[high]
+- Daily Low: $[low]
+
+Always acknowledge the tool results and present them clearly to the user.""",
     tools=[FunctionTool(get_stock_price)],
     before_agent_callback=opik_tracer.before_agent_callback,
     after_agent_callback=opik_tracer.after_agent_callback,
